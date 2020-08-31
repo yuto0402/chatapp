@@ -7,7 +7,7 @@ def index(request):
 def signup_view(request):
     return render(request,"myapp/signup.html")
 
-def login(request):
+def login_view(request):
     return render (request, "myapp/login.html")
 
 def friends(request):
