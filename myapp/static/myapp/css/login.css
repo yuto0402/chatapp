@@ -1,0 +1,32 @@
+header {
+    text-align: center;
+    border-bottom: solid 1px #9b9b9b9b;
+}
+
+.form {
+    display: flex;
+    margin: 10px 5px 0;
+}
+
+.item {
+    flex: 1;
+}
+
+.input {
+    flex: 3;
+    margin-top: 15px;
+}
+
+input {
+    display: block;
+    margin: auto;
+}
+
+ul {
+    text-align: center;
+    list-style: none;
+}
+
+li {
+    padding-bottom: 5px;
+}

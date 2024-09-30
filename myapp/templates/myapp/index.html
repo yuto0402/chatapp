@@ -1,1 +1,16 @@
-I
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% load static %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/index.css' %}">
+</head>
+<body>
+    <div>
+        <a href="{% url 'login_view' %}">ログイン</a>
+        <a href="{% url 'signup_view' %}">会員登録</a>
+    </div>
+</body>
+</html>
