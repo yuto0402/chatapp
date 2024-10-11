@@ -4,10 +4,14 @@
 <link rel="stylesheet" href="{% static 'myapp/css/friends.css' %}">
 {% endblock %}
 
-{% block header-title %}友達{% endblock %}
+{% block header-title %}{{ user.username }}の友達{% endblock %}
 
 {% block content %}
 <main>
+    <form method="get">
+        <input type="text" name="query" value="{{ request.GET.query }}">
+        <button type="submit">検索する</button>
+    </form>
     {% for friend, lastMessage in lastMessage %}
     <a href="{% url 'talk_room' friend.pk %}" class="list">
         <div class="icon"><img src="{{ friend.friend.image.url }}" alt=""></div>

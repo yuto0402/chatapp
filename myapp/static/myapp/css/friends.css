@@ -6,6 +6,19 @@ main::-webkit-scrollbar {
     display: none;
 }
 
+form {
+    border-bottom: solid 1px #9b9b9b;
+    display: flex;
+}
+
+input {
+    flex: 4;
+}
+
+button {
+    flex: 1;
+}
+
 .list {
     height: 12.5vh;
     display: grid;

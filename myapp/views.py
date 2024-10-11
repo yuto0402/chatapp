@@ -13,19 +13,19 @@ from django.urls import reverse_lazy
 def index(request):
     return render(request, "myapp/index.html")
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = SignUpForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('index')
-    else:
-        form = SignUpForm()
+class signup_view(FormView):
+    template_name = 'myapp/signup.html'
+    form_class = SignUpForm
+    success_url = reverse_lazy('index')
 
-    context = {
-        'form': form,
-    }
-    return render(request, 'myapp/signup.html', context)
+    def form_valid(self, form):
+        form.send_email()
+        return super().form_valid
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = SignUpForm()
+        return context    
 
 class login_view(LoginView):
     authentication_form = LoginForm
@@ -38,8 +38,13 @@ class friendList(LoginRequiredMixin, ListView):
     login_url = 'login_view'
 
     def get_queryset(self):
-        user = self.request.user
-        return  Friend.objects.filter(user=user)
+        query = self.request.GET.get('query')
+
+        if query:
+            friend_list = Friend.objects.filter(user=self.request.user, friend__username__icontains=query)
+        else:
+            friend_list = Friend.objects.filter(user=self.request.user)
+        return friend_list
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
