@@ -1,14 +1,15 @@
 from typing import Any
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, ListView, DetailView, FormView
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import CustomUser, Friend, TalkRoom
+from .models import CustomUser, TalkRoom
 from .forms import SignUpForm, LoginForm, TalkForm, ChangeForm
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404
 
 def index(request):
     return render(request, "myapp/index.html")
@@ -33,17 +34,28 @@ class login_view(LoginView):
     next_page = 'friends'
 
 class friendList(LoginRequiredMixin, ListView):
-    model = Friend
+    model = CustomUser
     template_name = "myapp/friends.html"
     login_url = 'login_view'
 
     def get_queryset(self):
         query = self.request.GET.get('query')
-
+        friend_list = self.request.user.followed_by.all().prefetch_related(
+            Prefetch(
+                'receiver', 
+                queryset=TalkRoom.objects.filter(sender=self.request.user).order_by('-talkDate'),
+                to_attr='last_received_message'
+            ),
+            Prefetch(
+                'sender',
+                queryset=TalkRoom.objects.filter(receiver=self.request.user).order_by('-talkDate'),
+                to_attr='last_sent_message'
+            )
+        )
+    
         if query:
-            friend_list = Friend.objects.filter(user=self.request.user, friend__username__icontains=query)
-        else:
-            friend_list = Friend.objects.filter(user=self.request.user)
+            friend_list = friend_list.filter(Q(username__icontains=query) | Q(email__icontains=query))
+
         return friend_list
     
     def get_context_data(self, **kwargs):
@@ -51,18 +63,24 @@ class friendList(LoginRequiredMixin, ListView):
         friend_list = self.get_queryset()
         lastMessages = []
         for friend in friend_list:
-            lastMessage = TalkRoom.objects.filter((Q(sender=self.request.user) & Q(receiver=friend.friend))|(Q(receiver=self.request.user) & Q(sender=friend.friend))).order_by('-talkDate').first()
-            lastMessages.append([friend, lastMessage])
+            if friend.last_received_message:
+                last_message = friend.last_received_message[0]
+            elif friend.last_sent_message:
+                last_message = friend.last_sent_message[0]
+            lastMessages.append([friend, last_message])
         context['lastMessage'] = lastMessages
         return context
 
-class talk_room(LoginRequiredMixin, DetailView):
-    model = Friend
+class talkRoom(LoginRequiredMixin, DetailView):
+    model = CustomUser
     template_name = "myapp/talk_room.html" 
 
     def get_object(self, queryset=None):
-        friend = super().get_object(queryset)
-        self.messages = TalkRoom.objects.filter((Q(sender=self.request.user)&Q(receiver=friend.friend))|(Q(receiver=self.request.user)&Q(sender=friend.friend))).order_by('talkDate')
+        friend = get_object_or_404(CustomUser, pk=self.kwargs['pk'])
+        self.messages = TalkRoom.objects.filter(
+            (Q(sender=self.request.user) & Q(receiver=friend)) |
+            (Q(receiver=self.request.user) & Q(sender=friend))
+        ).select_related('sender', 'receiver').order_by('talkDate')
         return friend
 
     def post(self, request, *args, **kwargs):
@@ -71,20 +89,21 @@ class talk_room(LoginRequiredMixin, DetailView):
         if form.is_valid():
             message = form.save(commit=False)
             message.sender = request.user
-            message.receiver = friend.friend
+            message.receiver = friend
             message.save()
             return redirect('talk_room', pk=friend.pk)
         return self.get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
+        friend = get_object_or_404(CustomUser, pk=self.kwargs['pk'])
         context = super().get_context_data(**kwargs)
         context['messages'] = self.messages
         context['form'] = TalkForm()
+        context['friend'] = friend
         return context
 
-@login_required
-def setting(request):
-    return render(request, "myapp/setting.html")
+class setting(LoginRequiredMixin, TemplateView):
+    template_name = "myapp/setting.html"
 
 @login_required
 def change_view(request):

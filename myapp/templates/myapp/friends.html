@@ -14,8 +14,8 @@
     </form>
     {% for friend, lastMessage in lastMessage %}
     <a href="{% url 'talk_room' friend.pk %}" class="list">
-        <div class="icon"><img src="{{ friend.friend.image.url }}" alt=""></div>
-        <div class="friendName">{{ friend.friend.username }}</div>
+        <div class="icon"><img src="{{ friend.image.url }}" alt=""></div>
+        <div class="friendName">{{ friend.username }}</div>
         <div class="newMessage">{{ lastMessage.message }}</div>
         <div class="date">{{ lastMessage.talkDate }}</div>   
     </a>

@@ -1,12 +1,8 @@
 from django.contrib import admin
-from .models import CustomUser, Friend, TalkRoom
+from .models import CustomUser, TalkRoom
 # Register your models here.
+@admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'username')
 
-class FriendAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'user', 'friend')
-
-admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Friend, FriendAdmin)
 admin.site.register(TalkRoom)

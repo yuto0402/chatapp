@@ -4,8 +4,10 @@ import uuid
 
 # Create your mode
 class CustomUser(AbstractUser):
-    email = models.EmailField('Email address')
     image = models.ImageField('Img', upload_to='img/', null=True, blank=True)
+    following = models.ManyToManyField(
+        "self", related_name="followed_by", symmetrical=False, blank=True
+        )
 
     def __str__(self):
         return str(self.username)

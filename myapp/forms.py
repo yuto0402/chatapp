@@ -1,7 +1,7 @@
 from django import forms
 from allauth.account.forms import SignupForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import CustomUser, Friend, TalkRoom
+from .models import CustomUser, TalkRoom
 from django.core.mail import EmailMessage
 
 class SignUpForm(UserCreationForm):

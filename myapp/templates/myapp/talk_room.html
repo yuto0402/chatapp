@@ -7,7 +7,7 @@
 {% block header %}
 <div class="header">
     <a href="{% url 'friends' %}">＜</a>
-    <p>{{ friend.friend.username }}</p>
+    <p>{{ friend.username }}</p>
     <a href="{% url 'talk_room' friend.pk %}" class="update">更新</a>
 </div>
 {% endblock %}
